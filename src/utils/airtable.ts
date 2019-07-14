@@ -6,5 +6,3 @@ export const airtable = new Airtable({
   endpointUrl: 'https://api.airtable.com',
   apiKey: AIRTABLE_API_KEY,
 })
-
-export const Team = airtable.base('appHe7mDf7oXYgzyj')
