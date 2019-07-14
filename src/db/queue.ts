@@ -1,5 +1,5 @@
 import {Store} from './types'
-import {Fire} from './firestore'
+import {MultiCache} from './multi-cache'
 
 export class Queue {
   name: string
@@ -7,7 +7,7 @@ export class Queue {
 
   constructor(name: string) {
     this.name = name
-    this.store = new Fire(name)
+    this.store = new MultiCache({name, strategy: 'hybrid'})
   }
 
   async run() {}

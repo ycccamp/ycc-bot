@@ -4,8 +4,7 @@ import {promisify} from 'util'
 import {debug} from 'utils/logs'
 
 import {Store} from './types'
-import {Fire} from './firestore'
-import {MemoryStore} from './mem-store'
+import {MultiCache} from './multi-cache'
 
 const {AIRTABLE_API_KEY} = process.env
 
@@ -52,7 +51,7 @@ export class Table {
     this.name = name
     this.table = base(name)
     this.options = options
-    this.cache = new MemoryStore(name)
+    this.cache = new MultiCache({name, strategy: 'hybrid'})
 
     this._get = promisify(this.table.find)
     this._update = promisify(this.table.update)
@@ -106,7 +105,7 @@ export class Table {
   }
 
   async get(id: string) {
-    const cached = this.cache.get(id)
+    const cached = await this.cache.get(id)
 
     if (cached) {
       debug(`Using Cached Data: ${this.name} (id = ${id})`)
@@ -115,6 +114,7 @@ export class Table {
     }
 
     const record = await this._get(id)
+    await this.cache.set(id, record)
 
     debug(`Using Direct Data: ${this.name} (id = ${id})`)
 
