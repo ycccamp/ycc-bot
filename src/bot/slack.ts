@@ -1,5 +1,6 @@
 import {App} from '@slack/bolt'
 import {safeEval} from 'utils/safe-eval'
+import {Tasks} from 'db'
 
 const {SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET} = process.env
 
@@ -49,6 +50,38 @@ bolt.message('king', async ({message, say}) => {
 
 bolt.message('บอร์ดเกม', async c => c.say('แล่นเรือใบ'))
 bolt.message('เน็ตใช้ไม่ได้', async c => c.say('เพราะ บอดแบนอินเทอร์เน็ต'))
+
+bolt.message('$ airtable:tasks:all', async c => {
+  const tasks = await Tasks.find()
+
+  const result = `
+    \`\`\`
+      ${JSON.stringify(tasks, null, 2)}
+    \`\`\`
+  `.trim()
+
+  c.say(result)
+})
+
+const taskRegex = /\$ airtable:tasks:(.*)/ms
+
+bolt.message(taskRegex, async c => {
+  const m = taskRegex.exec(String(c.message.text))
+  if (!m || !m[1]) return
+
+  const taskID = m[1]
+  const task = await Tasks.get(taskID)
+
+  const result = `
+    Task ${taskID} =>
+
+    \`\`\`
+      ${JSON.stringify(task, null, 2)}
+    \`\`\`
+  `
+
+  c.say(result)
+})
 
 const delay = (ms: number) => new Promise(resolve => resolve(setTimeout, ms))
 
