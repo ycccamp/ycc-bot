@@ -1,4 +1,4 @@
-import {Table} from './db'
+import {Table} from './database'
 
 interface ServiceOption {}
 

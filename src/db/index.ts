@@ -1,4 +1,4 @@
-import {Database} from './db'
+import {Database} from './database'
 
 const Team = Database('appHe7mDf7oXYgzyj')
 
