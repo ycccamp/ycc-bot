@@ -59,4 +59,10 @@ export class Fire {
 
     return docRef.update(data)
   }
+
+  async delete(id: string) {
+    const docRef = this.collection.doc(id)
+
+    return docRef.delete()
+  }
 }

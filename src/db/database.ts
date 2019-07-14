@@ -43,6 +43,7 @@ export class Table {
   _get: Function
   _update: Function
   _create: Function
+  _destroy: Function
 
   constructor(base: any, name: string, options: Options) {
     this.name = name
@@ -53,13 +54,27 @@ export class Table {
     this._get = promisify(this.table.find)
     this._update = promisify(this.table.update)
     this._create = promisify(this.table.create)
+    this._destroy = promisify(this.table.destroy)
   }
 
   async find(view?: string) {
     if (!view && this.options.view) view = this.options.view
     if (!view) throw new Error(`The table's view must be specified.`)
 
-    return listDataWithCache(this.table, this.cache, view)
+    const cached = await this.cache.list()
+
+    if (cached && cached.length > 0) {
+      debug(`Using Cached Data: ${Table.name} (${cached.length} records)`)
+
+      return cached
+    }
+
+    const data = await listData(Table, view)
+    await this.cache.setAll(data)
+
+    debug(`Using Direct Data: ${Table.name} (${data.length} records)`)
+
+    return data
   }
 
   async update(id: string, data: any) {
@@ -80,6 +95,14 @@ export class Table {
     return r
   }
 
+  async remove(id: string) {
+    const data = await this._destroy(id)
+
+    await this.cache.delete(id)
+
+    return data
+  }
+
   async get(id: string) {
     const cached = this.cache.get(id)
 
@@ -95,27 +118,6 @@ export class Table {
 
     return mapRecord(record)
   }
-}
-
-export async function listDataWithCache(
-  Table: any,
-  Cache: Fire,
-  view: string,
-): Promise<any[]> {
-  const cached = await Cache.list()
-
-  if (cached && cached.length > 0) {
-    debug(`Using Cached Data: ${Table.name} (${cached.length} records)`)
-
-    return cached
-  }
-
-  const data = await listData(Table, view)
-  await Cache.setAll(data)
-
-  debug(`Using Direct Data: ${Table.name} (${data.length} records)`)
-
-  return data
 }
 
 export function listData(Table: any, view: string): Promise<any[]> {

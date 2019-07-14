@@ -30,6 +30,10 @@ export class AirtableService {
   async patch(id: string, data: any) {
     return this.table.update(id, data)
   }
+
+  async remove(id: string) {
+    return this.table.remove(id)
+  }
 }
 
 export const Service = AirtableService
