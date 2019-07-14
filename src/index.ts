@@ -3,12 +3,11 @@ import 'dotenv/config'
 import {Request, Response} from 'express'
 import feathers from '@feathersjs/feathers'
 import express from '@feathersjs/express'
-import {FeathersError} from '@feathersjs/errors'
 
-import {info, wtf} from 'utils/logs'
+import {info} from 'utils/logs'
 import {hooksProvider} from 'middleware/hooks-provider'
 
-import {staff} from 'services/StaffService'
+import {DataService} from 'services/DataService'
 
 const {PORT} = process.env
 
@@ -29,16 +28,16 @@ const IndexRoute = async (_req: Request, res: Response) =>
   res.send({status: 'OK!'})
 
 app.get('/', IndexRoute)
-app.configure(staff)
+app.configure(DataService)
 
 // Set up an error handler that gives us nicer errors
 const errorHandler = express.errorHandler({
-  json(error: FeathersError, _req: Request, res: Response, next: Function) {
-    wtf(`HTTP Error ${error.code} (${error.name}):`, error.message)
-
-    res.sendStatus(error.code)
-    next()
-  },
+  // json(error: FeathersError, _req: Request, res: Response, next: Function) {
+  //   wtf(`HTTP Error ${error.code} (${error.name}):`, error.message)
+  //
+  //   res.sendStatus(error.code)
+  //   next()
+  // },
 })
 
 app.use(errorHandler)

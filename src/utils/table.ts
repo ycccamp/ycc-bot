@@ -2,6 +2,6 @@ import {Database} from './db'
 
 const Team = Database('appHe7mDf7oXYgzyj')
 
-export const Staff = Team('Staff', {view: 'Staff List'})
-export const Role = Team('Role')
-export const Tasks = Team('Tasks')
+export const Staff = Team('Staffs', {view: 'Staff List'})
+export const Role = Team('Roles', {view: 'Role List'})
+export const Tasks = Team('Tasks', {view: 'Task List'})
