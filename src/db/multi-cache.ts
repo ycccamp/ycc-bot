@@ -72,28 +72,16 @@ export class MultiCache implements Store<any> {
       if (this.memory) {
         const m = await cb(this.memory)
 
-        if (Array.isArray(m)) {
-          if (m.length > 0) {
-            debug(`Cache: In-Memory (${m.length} records)`)
-
-            return m
-          }
-        } else if (m) {
-          debug(`Cache: In-Memory`)
-
-          return m
-        }
+        return this._withLog(m, 'In-Memory')
       }
 
       if (this.firestore) {
         const f = await cb(this.firestore)
 
         if (f) {
-          debug(`Cache: Firestore`, f)
-
           this._saveInMemory(f, key)
 
-          return f
+          return this._withLog(f, 'Firestore')
         }
       }
 
@@ -101,6 +89,24 @@ export class MultiCache implements Store<any> {
     }
 
     if (this.cache) return cb(this.cache)
+  }
+
+  _withLog(data: any, type: string) {
+    if (Array.isArray(data)) {
+      if (data.length > 0) {
+        debug(`Cache: ${type} (${data.length} records)`)
+
+        return data
+      }
+    }
+
+    if (data) {
+      debug(`Cache: ${type}`)
+
+      return data
+    }
+
+    return null
   }
 
   _saveInMemory(data: any, key?: string) {
