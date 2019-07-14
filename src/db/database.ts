@@ -96,11 +96,10 @@ export class Table {
   }
 
   async remove(id: string) {
-    const data = await this._destroy(id)
-
+    await this._destroy(id)
     await this.cache.delete(id)
 
-    return data
+    return id
   }
 
   async get(id: string) {
