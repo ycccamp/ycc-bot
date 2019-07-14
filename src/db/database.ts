@@ -1,5 +1,8 @@
-import Airtable from 'db'
+import Airtable from 'airtable'
 import {promisify} from 'util'
+
+import {Fire} from './firestore'
+import {debug} from 'utils/logs'
 
 const {AIRTABLE_API_KEY} = process.env
 
@@ -50,7 +53,7 @@ export class Table {
     if (!view && this.options.view) view = this.options.view
     if (!view) throw new Error(`The table's view must be specified.`)
 
-    return listData(this.table, view)
+    return listDataWithCache(this.table, view)
   }
 
   async get(id: string) {
@@ -58,6 +61,28 @@ export class Table {
 
     return mapRecord(record)
   }
+}
+
+export async function listDataWithCache(
+  Table: any,
+  view: string,
+): Promise<any[]> {
+  const Cache = new Fire(Table.name)
+
+  const cache = await Cache.list()
+
+  if (cache && cache.length > 0) {
+    debug(`Using Cached Data: ${Table.name} (${cache.length} records)`)
+
+    return cache
+  }
+
+  const data = await listData(Table, view)
+  await Cache.setAll(data)
+
+  debug(`Using Direct Data: ${Table.name} (${data.length} records)`)
+
+  return data
 }
 
 export function listData(Table: any, view: string): Promise<any[]> {
