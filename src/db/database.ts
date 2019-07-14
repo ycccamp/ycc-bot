@@ -64,15 +64,15 @@ export class Table {
     const cached = await this.cache.list()
 
     if (cached && cached.length > 0) {
-      debug(`Using Cached Data: ${Table.name} (${cached.length} records)`)
+      debug(`Using Cached Data: ${this.name} (${cached.length} records)`)
 
       return cached
     }
 
-    const data = await listData(Table, view)
+    const data = await listData(this.table, view)
     await this.cache.setAll(data)
 
-    debug(`Using Direct Data: ${Table.name} (${data.length} records)`)
+    debug(`Using Direct Data: ${this.name} (${data.length} records)`)
 
     return data
   }
