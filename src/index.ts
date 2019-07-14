@@ -8,7 +8,7 @@ import {FeathersError} from '@feathersjs/errors'
 import {info, wtf} from 'utils/logs'
 import {hooksProvider} from 'middleware/hooks-provider'
 
-import debug from 'services/DebugService'
+import {staff} from 'services/StaffService'
 
 const {PORT} = process.env
 
@@ -29,7 +29,7 @@ const IndexRoute = async (_req: Request, res: Response) =>
   res.send({status: 'OK!'})
 
 app.get('/', IndexRoute)
-app.configure(debug)
+app.configure(staff)
 
 // Set up an error handler that gives us nicer errors
 const errorHandler = express.errorHandler({

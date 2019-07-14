@@ -1,8 +1,18 @@
+import {promisify} from 'util'
+
 import {airtable} from './airtable'
 
 interface Options {
   max?: number
   view?: string
+}
+
+function mapRecord({id, _rawJson, fields}: any) {
+  return {
+    id: id,
+    createdAt: _rawJson.createdTime,
+    ...fields,
+  }
 }
 
 export const Database = (baseID: string) => (
@@ -20,10 +30,14 @@ export class Table {
   tableName: string
   options: Options = {}
 
+  _get: Function
+
   constructor(base: any, tableName: string, options: Options) {
     this.tableName = tableName
     this.table = base(tableName)
     this.options = options
+
+    this._get = promisify(this.table.find)
   }
 
   async find(view?: string) {
@@ -32,17 +46,19 @@ export class Table {
 
     return listData(this.table, view)
   }
+
+  async get(id: string) {
+    const record = await this._get(id)
+
+    return mapRecord(record)
+  }
 }
 
 export function listData(Table: any, view: string): Promise<any[]> {
   return new Promise((resolve, reject) => {
     Table.select({view}).all((err: Error, records: any[]) => {
       if (err) return reject(err)
-      const list = records.map(r => ({
-        id: r.id,
-        createdAt: r._rawJson.createdTime,
-        ...r.fields,
-      }))
+      const list = records.map(mapRecord)
       resolve(list)
     })
   })
