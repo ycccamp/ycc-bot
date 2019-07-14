@@ -35,16 +35,18 @@ export const Database = (baseID: string) => (
 
 export class Table {
   table: any
+  cache: Fire
 
-  tableName: string
+  name: string
   options: Options = {}
 
   _get: Function
 
-  constructor(base: any, tableName: string, options: Options) {
-    this.tableName = tableName
-    this.table = base(tableName)
+  constructor(base: any, name: string, options: Options) {
+    this.name = name
+    this.table = base(name)
     this.options = options
+    this.cache = new Fire(name)
 
     this._get = promisify(this.table.find)
   }
@@ -53,11 +55,21 @@ export class Table {
     if (!view && this.options.view) view = this.options.view
     if (!view) throw new Error(`The table's view must be specified.`)
 
-    return listDataWithCache(this.table, view)
+    return listDataWithCache(this.table, this.cache, view)
   }
 
   async get(id: string) {
+    const cached = this.cache.get(id)
+
+    if (cached) {
+      debug(`Using Cached Data: ${this.name} (id = ${id})`)
+
+      return cached
+    }
+
     const record = await this._get(id)
+
+    debug(`Using Direct Data: ${this.name} (id = ${id})`)
 
     return mapRecord(record)
   }
@@ -65,16 +77,15 @@ export class Table {
 
 export async function listDataWithCache(
   Table: any,
+  Cache: Fire,
   view: string,
 ): Promise<any[]> {
-  const Cache = new Fire(Table.name)
+  const cached = await Cache.list()
 
-  const cache = await Cache.list()
+  if (cached && cached.length > 0) {
+    debug(`Using Cached Data: ${Table.name} (${cached.length} records)`)
 
-  if (cache && cache.length > 0) {
-    debug(`Using Cached Data: ${Table.name} (${cache.length} records)`)
-
-    return cache
+    return cached
   }
 
   const data = await listData(Table, view)
