@@ -36,4 +36,8 @@ export class MemoryStore<T extends BaseRecord> implements Store<any> {
   delete(id: string) {
     this.cache.delete(id)
   }
+
+  clear() {
+    this.cache.clear()
+  }
 }

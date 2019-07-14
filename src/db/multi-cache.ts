@@ -89,7 +89,7 @@ export class MultiCache implements Store<any> {
         const f = await cb(this.firestore)
 
         if (f) {
-          debug(`Cache: Firestore`)
+          debug(`Cache: Firestore`, f)
 
           this._saveInMemory(f, key)
 
@@ -139,5 +139,9 @@ export class MultiCache implements Store<any> {
 
   delete(id: string) {
     this._write(s => s.delete(id))
+  }
+
+  clear() {
+    this._write(s => s.clear())
   }
 }

@@ -59,6 +59,13 @@ export class Table {
     this._destroy = promisify(this.table.destroy)
   }
 
+  async sync(view?: string) {
+    const list = await this.find(view)
+
+    await this.cache.clear()
+    await this.cache.setAll(list)
+  }
+
   async find(view?: string) {
     if (!view && this.options.view) view = this.options.view
     if (!view) throw new Error(`The table's view must be specified.`)

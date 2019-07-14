@@ -11,4 +11,5 @@ export interface Store<T extends BaseRecord> {
   list: () => T[] | Promise<T[]>
   update: (id: string, data: T) => T
   delete: (id: string) => T
+  clear: () => void | Promise<void>
 }

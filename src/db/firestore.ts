@@ -2,6 +2,7 @@ import admin from 'firebase-admin'
 
 import {firestore} from './firebase'
 import {Store, BaseRecord} from './types'
+import {deleteCollection} from './firestore-delete'
 
 type CollectionReference = admin.firestore.CollectionReference
 
@@ -65,5 +66,9 @@ export class Fire<T extends BaseRecord> implements Store<any> {
     const docRef = this.collection.doc(id)
 
     return docRef.delete()
+  }
+
+  async clear(): Promise<void> {
+    await deleteCollection(this.collection, 50)
   }
 }
