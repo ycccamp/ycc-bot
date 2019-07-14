@@ -3,20 +3,32 @@ import {Table} from './database'
 interface ServiceOption {}
 
 export class AirtableService {
-  Table: Table
+  table: Table
   options: ServiceOption
 
   constructor(Table: Table, options: ServiceOption = {}) {
-    this.Table = Table
+    this.table = Table
     this.options = options
   }
 
   async find() {
-    return this.Table.find()
+    return this.table.find()
   }
 
   async get(id: string) {
-    return this.Table.get(id)
+    return this.table.get(id)
+  }
+
+  async create(data: any) {
+    return this.table.create(data)
+  }
+
+  async update(id: string, data: any) {
+    return this.table.update(id, data)
+  }
+
+  async patch(id: string, data: any) {
+    return this.table.update(id, data)
   }
 }
 

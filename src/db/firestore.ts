@@ -29,7 +29,7 @@ export class Fire {
     return batch.commit()
   }
 
-  add(data: any) {
+  create(data: any) {
     return this.collection.add(data)
   }
 
@@ -52,5 +52,11 @@ export class Fire {
         return {id: doc.id, ...doc.data()}
       })
       .filter(x => x)
+  }
+
+  async update(id: string, data: any) {
+    const docRef = this.collection.doc(id)
+
+    return docRef.update(data)
   }
 }

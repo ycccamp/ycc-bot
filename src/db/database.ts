@@ -41,6 +41,8 @@ export class Table {
   options: Options = {}
 
   _get: Function
+  _update: Function
+  _create: Function
 
   constructor(base: any, name: string, options: Options) {
     this.name = name
@@ -49,6 +51,8 @@ export class Table {
     this.cache = new Fire(name)
 
     this._get = promisify(this.table.find)
+    this._update = promisify(this.table.update)
+    this._create = promisify(this.table.create)
   }
 
   async find(view?: string) {
@@ -56,6 +60,24 @@ export class Table {
     if (!view) throw new Error(`The table's view must be specified.`)
 
     return listDataWithCache(this.table, this.cache, view)
+  }
+
+  async update(id: string, data: any) {
+    const record = await this._update(id, data)
+    const r = mapRecord(record)
+
+    await this.cache.set(r.id, r)
+
+    return r
+  }
+
+  async create(data: any) {
+    const record = await this._create(data)
+    const r = mapRecord(record)
+
+    await this.cache.set(r.id, r)
+
+    return r
   }
 
   async get(id: string) {
