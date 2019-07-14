@@ -4,7 +4,7 @@ import {Request, Response} from 'express'
 import feathers from '@feathersjs/feathers'
 import express from '@feathersjs/express'
 
-import {info} from 'utils/logs'
+import {info, debug} from 'utils/logs'
 import {hooksProvider} from 'middleware/hooks-provider'
 
 import {DataService} from 'services/DataService'
@@ -24,14 +24,6 @@ app.use(express.json())
 // Turn on URL-encoded body parsing for REST services
 app.use(express.urlencoded({extended: true}))
 
-app.use(
-  '/slack',
-  verifySignatureAndParseBody,
-  (req: Request, res: Response) => {
-    bolt.receiver.requestHandler(req, res)
-  },
-)
-
 app.use(hooksProvider)
 
 const IndexRoute = async (_req: Request, res: Response) =>
@@ -39,6 +31,12 @@ const IndexRoute = async (_req: Request, res: Response) =>
 
 app.get('/', IndexRoute)
 app.configure(DataService)
+
+app.use('/slack', (req: Request, res: Response) => {
+  debug('/slack', req.body)
+
+  bolt.receiver.requestHandler(req, res)
+})
 
 // Set up an error handler that gives us nicer errors
 const errorHandler = express.errorHandler({
