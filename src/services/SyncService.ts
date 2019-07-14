@@ -10,8 +10,8 @@ export class SyncService {
     this.app = app
   }
 
-  async post(options) {
-    const {service, action} = options
+  async create(payload) {
+    const {service, action} = payload
     const s = this.app.service(service)
 
     if (s) {
