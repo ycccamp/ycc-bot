@@ -1,8 +1,11 @@
 import Airtable from 'airtable'
-import {promisify} from 'util'
 
-import {Fire} from './firestore'
+import {promisify} from 'util'
 import {debug} from 'utils/logs'
+
+import {Store} from './types'
+import {Fire} from './firestore'
+import {MemoryStore} from './mem-store'
 
 const {AIRTABLE_API_KEY} = process.env
 
@@ -35,7 +38,7 @@ export const Database = (baseID: string) => (
 
 export class Table {
   table: any
-  cache: Fire
+  cache: Store<any>
 
   name: string
   options: Options = {}
@@ -49,7 +52,7 @@ export class Table {
     this.name = name
     this.table = base(name)
     this.options = options
-    this.cache = new Fire(name)
+    this.cache = new MemoryStore(name)
 
     this._get = promisify(this.table.find)
     this._update = promisify(this.table.update)

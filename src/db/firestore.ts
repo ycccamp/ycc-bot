@@ -1,23 +1,24 @@
 import admin from 'firebase-admin'
 
 import {firestore} from './firebase'
+import {Store, BaseRecord} from './types'
 
 type CollectionReference = admin.firestore.CollectionReference
 
-export class Fire {
+export class Fire<T extends BaseRecord> implements Store<any> {
   collection: CollectionReference
 
   constructor(name: string) {
     this.collection = firestore.collection(name)
   }
 
-  set(id: string, data: any) {
+  set(id: string, data: T) {
     const docRef = this.collection.doc(id)
 
     return docRef.set(data)
   }
 
-  setAll(data: any[]) {
+  setAll(data: T[]) {
     const batch = firestore.batch()
 
     data.forEach(item => {
@@ -29,7 +30,7 @@ export class Fire {
     return batch.commit()
   }
 
-  create(data: any) {
+  create(data: T) {
     return this.collection.add(data)
   }
 
@@ -54,7 +55,7 @@ export class Fire {
       .filter(x => x)
   }
 
-  async update(id: string, data: any) {
+  async update(id: string, data: T) {
     const docRef = this.collection.doc(id)
 
     return docRef.update(data)
