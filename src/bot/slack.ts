@@ -44,8 +44,8 @@ bolt.message('time', async ({message, say}) => {
   say(`The time is ${date.getHours()}:${date.getMinutes()}`)
 })
 
-bolt.message('king', async ({message, say}) => {
-  say(`ไอ้พวกล้มเจ้า`)
+bolt.message('king', async c => {
+  c.say(`ไอ้พวกล้มเจ้า`)
 })
 
 bolt.message('บอร์ดเกม', async c => c.say('แล่นเรือใบ'))
@@ -54,11 +54,7 @@ bolt.message('เน็ตใช้ไม่ได้', async c => c.say('เพ
 bolt.message('$ airtable:tasks:all', async c => {
   const tasks = await Tasks.find()
 
-  const result = `
-    \`\`\`
-      ${JSON.stringify(tasks, null, 2)}
-    \`\`\`
-  `.trim()
+  const result = JSON.stringify(tasks, null, 2).trim()
 
   c.say(result)
 })
