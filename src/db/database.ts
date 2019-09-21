@@ -3,7 +3,7 @@ import Airtable from 'airtable'
 import {promisify} from 'util'
 import {debug} from 'utils/logs'
 
-import {Store} from './types'
+import {Store, BaseRecord, BaseFields, Options} from './types'
 import {MultiCache} from './multi-cache'
 
 const {AIRTABLE_API_KEY} = process.env
@@ -13,50 +13,77 @@ export const airtable = new Airtable({
   apiKey: AIRTABLE_API_KEY,
 })
 
-interface Options {
-  max?: number
-  view?: string
-}
-
-function mapRecord({id, _rawJson, fields}: any) {
+function mapRecord<T>({id, _rawJson, fields}: any): BaseRecord<T> {
   return {
     id: id,
-    createdAt: _rawJson.createdTime,
+    createdAt: new Date(_rawJson.createdTime),
     ...fields,
   }
 }
 
-export const Database = (baseID: string) => (
-  tableName: string,
-  options: Options = {},
-) => {
-  const base = airtable.base(baseID)
+export function Database(baseID: string) {
+  return function createTable<T extends BaseFields>(tableName: string, options: Options<T> = {}) {
+    const base = airtable.base(baseID)
 
-  return new Table(base, tableName, options)
+    return new Table<T>(base, tableName, options)
+  }
 }
 
-export class Table {
+export class Table<T extends BaseFields> {
   table: any
   cache: Store<any>
 
   name: string
-  options: Options = {}
+  options: Options<T> = {}
+
+  _fields: Record<string, keyof T> = {}
 
   _get: Function
   _update: Function
   _create: Function
   _destroy: Function
 
-  constructor(base: any, name: string, options: Options) {
+  constructor(base: any, name: string, options: Options<T>) {
     this.name = name
     this.table = base(name)
-    this.options = options
     this.cache = new MultiCache({name, strategy: 'hybrid'})
+
+    if (this.options) {
+      this.options = options
+    }
+
+    if (options.fields) {
+      this._fields = Object.entries(options.fields).map(([k, v]) => ({[String(v)]: k})).reduce((a, b) => ({...a, ...b})) as Record<string, keyof T>
+    }
 
     this._get = promisify(this.table.find)
     this._update = promisify(this.table.update)
     this._create = promisify(this.table.create)
     this._destroy = promisify(this.table.destroy)
+  }
+
+  _transform = async (item: any): Promise<T> => {
+    const {fields, transform} = this.options
+
+    let record: T = {} as T
+    item = mapRecord<T>(item)
+
+    if (fields) {
+      for (let originalKey in item) {
+        const newKey = this._fields[originalKey]
+
+        const value = item[originalKey]
+        const key = (newKey || originalKey) as keyof BaseRecord<T>
+
+        record[key] = value
+      }
+    }
+
+    if (transform) {
+      record = await transform(record)
+    }
+
+    return record
   }
 
   async sync(view?: string) {
@@ -66,7 +93,7 @@ export class Table {
     await this.cache.setAll(list)
   }
 
-  async find(view?: string) {
+  async find(view?: string): Promise<T[]> {
     if (!view && this.options.view) view = this.options.view
     if (!view) throw new Error(`The table's view must be specified.`)
 
@@ -78,7 +105,9 @@ export class Table {
       return cached
     }
 
-    const data = await listData(this.table, view)
+    let data = await listData(this.table, view)
+    data = await Promise.all(data.map(this._transform))
+
     await this.cache.setAll(data)
 
     debug(`Using Direct Data: ${this.name} (${data.length} records)\n`)
@@ -86,18 +115,18 @@ export class Table {
     return data
   }
 
-  async update(id: string, data: any) {
+  async update(id: string, data: Partial<T>): Promise<T> {
     const record = await this._update(id, data)
-    const r = mapRecord(record)
+    const r = await this._transform(record)
 
     await this.cache.set(r.id, r)
 
     return r
   }
 
-  async create(data: any) {
+  async create(data: T): Promise<T> {
     const record = await this._create(data)
-    const r = mapRecord(record)
+    const r = await this._transform(record)
 
     await this.cache.set(r.id, r)
 
@@ -111,7 +140,7 @@ export class Table {
     return id
   }
 
-  async get(id: string) {
+  async get(id: string): Promise<T> {
     const cached = await this.cache.get(id)
 
     if (cached) {
@@ -125,7 +154,7 @@ export class Table {
 
     debug(`Using Direct Data: ${this.name} (id = ${id})`)
 
-    return mapRecord(record)
+    return this._transform(record)
   }
 }
 
@@ -133,8 +162,7 @@ export function listData(Table: any, view: string): Promise<any[]> {
   return new Promise((resolve, reject) => {
     Table.select({view}).all((err: Error, records: any[]) => {
       if (err) return reject(err)
-      const list = records.map(mapRecord)
-      resolve(list)
+      resolve(records)
     })
   })
 }

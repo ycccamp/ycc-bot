@@ -4,12 +4,11 @@ import {Request, Response} from 'express'
 import feathers from '@feathersjs/feathers'
 import express from '@feathersjs/express'
 
-import {info, debug} from 'utils/logs'
+import {info} from 'utils/logs'
 import {hooksProvider} from 'middleware/hooks-provider'
 
 import {DataService} from 'services/DataService'
-import {bolt} from 'bot/slack'
-import {verifySignatureAndParseBody} from 'bot/verify-sig'
+import {bot} from 'bot/slack'
 
 const {PORT} = process.env
 
@@ -33,9 +32,7 @@ app.get('/', IndexRoute)
 app.configure(DataService)
 
 app.use('/slack', (req: Request, res: Response) => {
-  debug('/slack', req.body)
-
-  bolt.receiver.requestHandler(req, res)
+  bot.receiver.requestHandler(req, res)
 })
 
 // Set up an error handler that gives us nicer errors

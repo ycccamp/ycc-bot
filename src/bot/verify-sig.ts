@@ -18,8 +18,6 @@ export async function verifySignatureAndParseBody(
   res: Response,
   next: Function,
 ) {
-  console.log(req.body, req.headers, req.params)
-
   if (req.body && req.body.ssl_check) {
     res.send()
 
@@ -45,8 +43,6 @@ export async function verifySignatureAndParseBody(
     }
 
     if (req.body && req.body.type && req.body.type === 'url_verification') {
-      debug('> Signature OK!')
-
       res.json({challenge: req.body.challenge})
 
       return

@@ -1,8 +1,8 @@
-import {Store, BaseRecord} from './types'
+import {Store, BaseFields} from './types'
 
 const randomKey = () => Math.floor(Math.random() * 10000000).toString(36)
 
-export class MemoryStore<T extends BaseRecord> implements Store<any> {
+export class MemoryStore<T extends BaseFields> implements Store<any> {
   cache = new Map<string, T>()
 
   set(id: string, data: T) {

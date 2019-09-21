@@ -1,12 +1,12 @@
 import admin from 'firebase-admin'
 
 import {firestore} from './firebase'
-import {Store, BaseRecord} from './types'
+import {Store, BaseFields} from './types'
 import {deleteCollection} from './firestore-delete'
 
 type CollectionReference = admin.firestore.CollectionReference
 
-export class Fire<T extends BaseRecord> implements Store<any> {
+export class Fire<T extends BaseFields> implements Store<any> {
   collection: CollectionReference
 
   constructor(name: string) {

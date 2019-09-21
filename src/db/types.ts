@@ -1,9 +1,18 @@
-export interface BaseRecord {
-  id: string
-  createdAt: string
+export type BaseFields = {
+  id: string,
+  createdAt: Date
 }
 
-export interface Store<T extends BaseRecord> {
+export type BaseRecord<T> = T & BaseFields
+
+export interface Options<T extends BaseFields> {
+  max?: number
+  view?: string
+  fields?: FieldMapping<T>
+  transform?: TransformFn<T>
+}
+
+export interface Store<T extends BaseFields> {
   set: (id: string, data: T) => T
   setAll: (data: T[]) => any
   create: (data: T) => T
@@ -13,3 +22,7 @@ export interface Store<T extends BaseRecord> {
   delete: (id: string) => T
   clear: () => void | Promise<void>
 }
+
+export type FieldMapping<T> = Partial<Record<keyof BaseRecord<T>, string>>
+
+export type TransformFn<T extends BaseFields> = (item: T) => Promise<T>

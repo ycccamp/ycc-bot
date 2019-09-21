@@ -2,9 +2,11 @@ import {App} from '@slack/bolt'
 import {safeEval} from 'utils/safe-eval'
 import {Tasks} from 'db'
 
+import {debug} from 'utils/logs'
+
 const {SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET} = process.env
 
-export const bolt = new App({
+export const bot = new App({
   signingSecret: SLACK_SIGNING_SECRET,
   token: SLACK_BOT_TOKEN,
 })
@@ -20,13 +22,13 @@ const jbQuotes = [...jbAngryQuotes, 'ข้า...']
 
 const rand = (list: any[]) => list[Math.floor(Math.random() * list.length)]
 
-bolt.message('ด่า', async c => {
+bot.message('ด่า', async c => {
   const quote = rand(jbAngryQuotes)
 
   c.say(quote)
 })
 
-bolt.command('/jabont', async c => {
+bot.command('/jabont', async c => {
   c.ack()
 
   const quote = rand(jbQuotes)
@@ -34,24 +36,24 @@ bolt.command('/jabont', async c => {
   c.say(quote)
 })
 
-bolt.message('hello', async ({message, say}) => {
-  say(`Hello, ${message.user}!`)
+bot.message('โย่', async ({message, say}) => {
+  say(`สวัสดีฮะ <@${message.user}>!`)
 })
 
-bolt.message('time', async ({message, say}) => {
+bot.message('time', async ({message, say}) => {
   const date = new Date()
 
   say(`The time is ${date.getHours()}:${date.getMinutes()}`)
 })
 
-bolt.message('king', async c => {
+bot.message('king', async c => {
   c.say(`ไอ้พวกล้มเจ้า`)
 })
 
-bolt.message('บอร์ดเกม', async c => c.say('แล่นเรือใบ'))
-bolt.message('เน็ตใช้ไม่ได้', async c => c.say('เพราะ บอดแบนอินเทอร์เน็ต'))
+bot.message('บอร์ดเกม', async c => c.say('แล่นเรือใบ'))
+bot.message('เน็ตใช้ไม่ได้', async c => c.say('เพราะ บอดแบนอินเทอร์เน็ต'))
 
-bolt.message('$ airtable:tasks:all', async c => {
+bot.message('$ airtable:tasks:all', async c => {
   const tasks = await Tasks.find()
 
   const result = JSON.stringify(tasks, null, 2).trim()
@@ -61,7 +63,7 @@ bolt.message('$ airtable:tasks:all', async c => {
 
 const taskRegex = /\$ airtable:tasks:(.*)/ms
 
-bolt.message(taskRegex, async c => {
+bot.message(taskRegex, async c => {
   const m = taskRegex.exec(String(c.message.text))
   if (!m || !m[1]) return
 
@@ -81,7 +83,7 @@ bolt.message(taskRegex, async c => {
 
 const delay = (ms: number) => new Promise(resolve => resolve(setTimeout, ms))
 
-bolt.command('/eval', async ({say, ack, payload}) => {
+bot.command('/eval', async ({say, ack, payload}) => {
   ack()
 
   say(`Evaluating: ${payload.text}`)
@@ -91,4 +93,34 @@ bolt.command('/eval', async ({say, ack, payload}) => {
   const result = safeEval(payload.text)
 
   say(result)
+})
+
+bot.command('/ycc', async c => {
+  c.ack()
+
+  const {user_id, text} = c.payload
+
+  debug('> /ycc:', c.payload)
+
+  c.say(`สวัสดี <@${user_id}>`)
+})
+
+bot.command('/role', async c => {
+  c.ack()
+
+  const {text} = c.payload
+  debug('> /role:', c.payload)
+
+  c.say('OK.')
+})
+
+bot.command('/tasks', async c => {
+  c.ack()
+
+  c.say('Retrieving Tasks... Please wait.')
+
+  const tasks = await Tasks.find()
+
+  const names = tasks.map(x => x.name)
+  c.say(`Tasks: ${names.join('\n')}`)
 })
