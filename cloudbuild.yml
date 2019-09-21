@@ -1,13 +1,15 @@
 steps:
 # build the container image
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'asia.gcr.io/phoomparin/promptpal', '.']
+  args: ['build', '-t', 'gcr.io/ycc2020/ycc-bot', '.']
+
 # push the container image to Container Registry
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'asia.gcr.io/phoomparin/promptpal']
+  args: ['push', 'gcr.io/ycc2020/ycc-bot']
+
 # Deploy container image to Cloud Run
 - name: 'gcr.io/cloud-builders/gcloud'
-  args: ['beta', 'run', 'deploy', 'thaksin', '--image', 'asia.gcr.io/phoomparin/promptpal', '--region', 'us-central1']
+  args: ['gcloud', 'beta', 'run', 'deploy', '--image', 'gcr.io/ycc2020/ycc-bot:latest', '--project', 'ycc2020', '--region', 'us-central1', '--memory', '2Gi', '--timeout', '600', '--concurrency', '1', 'ycc-bot']
 
 images:
-- asia.gcr.io/phoomparin/thaksin
+- gcr.io/ycc2020/ycc-bot
