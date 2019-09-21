@@ -10,7 +10,8 @@
     "build-image": "docker build -t gcr.io/ycc2020/ycc-bot:latest .",
     "run-image": "docker run -p 8000:8000 --env PORT=8000 gcr.io/ycc2020/ycc-bot:latest .",
     "deploy": "gcloud beta run deploy --image gcr.io/ycc2020/ycc-bot:latest --project ycc2020 --region us-central1 --memory 2Gi --timeout 600 --concurrency 1 ycc-bot",
-    "test": "jest"
+    "test": "jest",
+    "tunnel": "ssh -R ycc.serveo.net:80:localhost:8080 serveo.net"
   },
   "devDependencies": {
     "@slack/types": "^1.0.0",
