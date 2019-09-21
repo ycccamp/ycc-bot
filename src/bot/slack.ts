@@ -120,7 +120,13 @@ bot.command('/tasks', async c => {
   c.say('Retrieving Tasks... Please wait.')
 
   const tasks = await Tasks.find()
+  debug('Tasks:', tasks)
 
-  const names = tasks.map(x => x.name)
-  c.say(`Tasks: ${names.join('\n')}`)
+  let output = `Tasks:\n`
+
+  tasks.forEach(task => {
+    output += `🦄 ${task.name}\n\n`
+  })
+
+  c.say(output)
 })
