@@ -1,6 +1,7 @@
 import {App} from '@slack/bolt'
 import {safeEval} from 'utils/safe-eval'
 import {Tasks} from 'db'
+import {Task} from 'db/tables/tasks'
 
 import {debug} from 'utils/logs'
 
@@ -114,6 +115,15 @@ bot.command('/role', async c => {
   c.say('OK.')
 })
 
+function sortByStatus(A: Task, B: Task) {
+  const order = ['Backlog', 'Ready to do', 'In Progress', 'In Review', 'Done']
+
+  const a = order.findIndex(k => A.status.includes(k)) || 0
+  const b = order.findIndex(k => B.status.includes(k)) || 0
+
+  return a - b
+}
+
 bot.command('/tasks', async c => {
   c.ack()
 
@@ -124,8 +134,10 @@ bot.command('/tasks', async c => {
 
   let output = `Tasks:\n`
 
-  tasks.forEach(task => {
-    output += `🦄 ${task.name}\n\n`
+  tasks.sort(sortByStatus).forEach(task => {
+    const status = task.status || 'Backlog :orange_book:'
+
+    output += `:ycc: *${task.name}* ~ ${status}\n\n`
   })
 
   c.say(output)
