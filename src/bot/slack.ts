@@ -127,12 +127,12 @@ function sortByStatus(A: Task, B: Task) {
 bot.command('/tasks', async c => {
   c.ack()
 
-  c.say('Retrieving Tasks... Please wait.')
+  c.respond({response_type: 'ephemeral', text: 'กำลังดึงข้อมูลงานทั้งหมด กรุณารอสักครู่...'})
 
   const tasks = await Tasks.find()
   debug('Tasks:', tasks)
 
-  let output = `Tasks:\n`
+  let output = `*[งานทั้งหมด]*\n\n`
 
   tasks.sort(sortByStatus).forEach(task => {
     const status = task.status || 'Backlog :orange_book:'
@@ -140,5 +140,5 @@ bot.command('/tasks', async c => {
     output += `:ycc: *${task.name}* ~ ${status}\n\n`
   })
 
-  c.say(output)
+  c.say({text: output, mrkdwn: true})
 })
