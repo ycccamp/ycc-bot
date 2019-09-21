@@ -1,4 +1,4 @@
-import Airtable from 'airtable'
+import Airtable, {FieldSet} from 'airtable'
 
 import {promisify} from 'util'
 import {debug} from 'utils/logs'
@@ -30,7 +30,7 @@ export function Database(baseID: string) {
 }
 
 export class Table<T extends BaseFields> {
-  table: any
+  table: Airtable.Table<T & FieldSet>
   cache: Store<any>
 
   name: string

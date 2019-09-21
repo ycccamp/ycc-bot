@@ -1,3 +1,5 @@
+import {FieldSet} from 'airtable'
+
 export type BaseFields = {
   id: string,
   createdAt: Date

@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@slack/types": "^1.0.0",
+    "@types/airtable": "^0.5.6",
     "@types/dotenv": "^6.1.1",
     "@types/feathersjs__socketio": "^3.0.6",
     "@types/gapi": "^0.0.36",
